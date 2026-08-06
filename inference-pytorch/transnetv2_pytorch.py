@@ -17,15 +17,27 @@ class TransNetV2(nn.Module):
                  use_convex_comb_reg=False,  # not supported
                  use_resnet_features=False,  # not supported
                  use_resnet_like_top=False,  # not supported
-                 frame_similarity_on_last_layer=False):  # not supported
+                 frame_similarity_on_last_layer=False,  # not supported
+                 fuse_spatial_convolutions=False):
         super(TransNetV2, self).__init__()
 
         if use_resnet_features or use_resnet_like_top or use_convex_comb_reg or frame_similarity_on_last_layer:
             raise NotImplemented("Some options not implemented in Pytorch version of Transnet!")
 
         self.SDDCNN = nn.ModuleList(
-            [StackedDDCNNV2(in_filters=3, n_blocks=S, filters=F, stochastic_depth_drop_prob=0.)] +
-            [StackedDDCNNV2(in_filters=(F * 2 ** (i - 1)) * 4, n_blocks=S, filters=F * 2 ** i) for i in range(1, L)]
+            [StackedDDCNNV2(
+                in_filters=3,
+                n_blocks=S,
+                filters=F,
+                stochastic_depth_drop_prob=0.,
+                fuse_spatial_convolutions=fuse_spatial_convolutions,
+            )] +
+            [StackedDDCNNV2(
+                in_filters=(F * 2 ** (i - 1)) * 4,
+                n_blocks=S,
+                filters=F * 2 ** i,
+                fuse_spatial_convolutions=fuse_spatial_convolutions,
+            ) for i in range(1, L)]
         )
 
         self.frame_sim_layer = FrameSimilarity(
@@ -96,7 +108,8 @@ class StackedDDCNNV2(nn.Module):
                  shortcut=True,
                  use_octave_conv=False,  # not supported
                  pool_type="avg",
-                 stochastic_depth_drop_prob=0.0):
+                 stochastic_depth_drop_prob=0.0,
+                 fuse_spatial_convolutions=False):
         super(StackedDDCNNV2, self).__init__()
 
         if use_octave_conv:
@@ -109,7 +122,8 @@ class StackedDDCNNV2(nn.Module):
         self.shortcut = shortcut
         self.DDCNN = nn.ModuleList([
             DilatedDCNNV2(in_filters if i == 1 else filters * 4, filters, octave_conv=use_octave_conv,
-                          activation=functional.relu if i != n_blocks else None) for i in range(1, n_blocks + 1)
+                          activation=functional.relu if i != n_blocks else None,
+                          fuse_spatial_convolutions=fuse_spatial_convolutions) for i in range(1, n_blocks + 1)
         ])
         self.pool = nn.MaxPool3d(kernel_size=(1, 2, 2)) if pool_type == "max" else nn.AvgPool3d(kernel_size=(1, 2, 2))
         self.stochastic_depth_drop_prob = stochastic_depth_drop_prob
@@ -148,7 +162,8 @@ class DilatedDCNNV2(nn.Module):
                  filters,
                  batch_norm=True,
                  activation=None,
-                 octave_conv=False):  # not supported
+                 octave_conv=False,
+                 fuse_spatial_convolutions=False):
         super(DilatedDCNNV2, self).__init__()
 
         if octave_conv:
@@ -156,19 +171,48 @@ class DilatedDCNNV2(nn.Module):
 
         assert not (octave_conv and batch_norm)
 
-        self.Conv3D_1 = Conv3DConfigurable(in_filters, filters, 1, use_bias=not batch_norm)
-        self.Conv3D_2 = Conv3DConfigurable(in_filters, filters, 2, use_bias=not batch_norm)
-        self.Conv3D_4 = Conv3DConfigurable(in_filters, filters, 4, use_bias=not batch_norm)
-        self.Conv3D_8 = Conv3DConfigurable(in_filters, filters, 8, use_bias=not batch_norm)
+        self.fuse_spatial_convolutions = fuse_spatial_convolutions
+        if fuse_spatial_convolutions:
+            self.conv_spatial = nn.Conv3d(
+                in_filters,
+                8 * filters,
+                kernel_size=(1, 3, 3),
+                dilation=(1, 1, 1),
+                padding=(0, 1, 1),
+                bias=False,
+            )
+            self.conv_temporal = nn.ModuleList([
+                nn.Conv3d(
+                    2 * filters,
+                    filters,
+                    kernel_size=(3, 1, 1),
+                    dilation=(dilation_rate, 1, 1),
+                    padding=(dilation_rate, 0, 0),
+                    bias=not batch_norm,
+                ) for dilation_rate in (1, 2, 4, 8)
+            ])
+        else:
+            self.Conv3D_1 = Conv3DConfigurable(in_filters, filters, 1, use_bias=not batch_norm)
+            self.Conv3D_2 = Conv3DConfigurable(in_filters, filters, 2, use_bias=not batch_norm)
+            self.Conv3D_4 = Conv3DConfigurable(in_filters, filters, 4, use_bias=not batch_norm)
+            self.Conv3D_8 = Conv3DConfigurable(in_filters, filters, 8, use_bias=not batch_norm)
 
         self.bn = nn.BatchNorm3d(filters * 4, eps=1e-3) if batch_norm else None
         self.activation = activation
 
     def forward(self, inputs):
-        conv1 = self.Conv3D_1(inputs)
-        conv2 = self.Conv3D_2(inputs)
-        conv3 = self.Conv3D_4(inputs)
-        conv4 = self.Conv3D_8(inputs)
+        if self.fuse_spatial_convolutions:
+            spatial = self.conv_spatial(inputs)
+            spatial_branches = spatial.split(self.conv_temporal[0].in_channels, dim=1)
+            conv1, conv2, conv3, conv4 = [
+                temporal(spatial_branch)
+                for temporal, spatial_branch in zip(self.conv_temporal, spatial_branches)
+            ]
+        else:
+            conv1 = self.Conv3D_1(inputs)
+            conv2 = self.Conv3D_2(inputs)
+            conv3 = self.Conv3D_4(inputs)
+            conv4 = self.Conv3D_8(inputs)
 
         x = torch.cat([conv1, conv2, conv3, conv4], dim=1)
 

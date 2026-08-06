@@ -20,6 +20,18 @@ python convert_weights.py [--test]
 ```
 The pytorch weights are saved into *transnetv2-pytorch-weights.pth* file.
 
+To export the exact-equivalent experimental path that combines the four parallel
+spatial convolutions in every DDCNN block, pass `--fuse-spatial-convolutions` to
+`convert_weights.py`. The default conversion remains the reference architecture.
+The fused weights are saved to *transnetv2-pytorch-weights-fused.pth* and must be
+loaded into the matching architecture:
+
+```python
+model = TransNetV2(fuse_spatial_convolutions=True)
+state_dict = torch.load("transnetv2-pytorch-weights-fused.pth")
+model.load_state_dict(state_dict)
+```
+
 ### ADVANCED USAGE
 
 ```python
