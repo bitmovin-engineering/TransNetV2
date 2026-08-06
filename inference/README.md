@@ -77,6 +77,22 @@ model.visualize_predictions(
     video_frames, predictions=(single_frame_predictions, all_frame_predictions))
 ```
 
+### OPTIONAL CPU GRAPH EXPORT
+
+For a CPU-only inference experiment, create a separate SavedModel with the
+four parallel spatial convolutions in each DDCNN block fused into one wider
+convolution followed by a split:
+
+```bash
+python inference/fuse_spatial_convolutions.py \
+    --input /path/to/transnetv2-weights \
+    --output /path/to/transnetv2-weights-fused
+```
+
+The source directory is not modified and the default model remains unchanged.
+The rewrite is export-time only; compare raw probabilities and shot boundaries
+against the reference model before using the fused directory in production.
+
 ### NOTES
 > :exclamation: It may happen that you get **DecodeError**, **OSError**, **IOError** with text *'Error parsing message'*. It is caused by corrupted files in *transnetv2-weights* folder. To fix the error, re-download the files manually. SHA256 sums for the files can be found in [issue #1](https://github.com/soCzech/TransNetV2/issues/1#issuecomment-647357796).
  
