@@ -93,7 +93,8 @@ def convert_weights(tf_weights_dir):
 
 
 def test_models(torch_model, tf_model):
-    input_tensors = [np.random.randint(0, 255, size=(2, 100, 27, 48, 3), dtype=np.uint8) for _ in range(10)]
+    random = np.random.default_rng(0)
+    input_tensors = [random.integers(0, 255, size=(2, 100, 27, 48, 3), dtype=np.uint8) for _ in range(10)]
 
     print("Tests: computing forward passes...")
     with torch.no_grad():
@@ -107,6 +108,10 @@ def test_models(torch_model, tf_model):
         print(f"Test {i:2d}: "
               f"{single * 100:5.1f}% of 'single' predictions matching, "
               f"{many * 100:5.1f}% of 'many' predictions matching")
+        np.testing.assert_allclose(torch_single.numpy(), tf_single.numpy(), rtol=1e-5, atol=1e-8)
+        np.testing.assert_allclose(
+            torch_many["many_hot"].numpy(), tf_many["many_hot"].numpy(), rtol=1e-5, atol=1e-8
+        )
 
 
 def main():
@@ -118,11 +123,11 @@ def main():
 
     torch_model, tf_model = convert_weights(args.tf_weights)
 
-    print("Saving model to ./transnetv2-pytorch-weights.pth")
-    torch.save(torch_model.state_dict(), "./transnetv2-pytorch-weights.pth")
-
     if args.test:
         test_models(torch_model, tf_model)
+
+    print("Saving model to ./transnetv2-pytorch-weights.pth")
+    torch.save(torch_model.state_dict(), "./transnetv2-pytorch-weights.pth")
 
 
 if __name__ == "__main__":
