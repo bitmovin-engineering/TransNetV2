@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "policy": {
+    "id": "aisa-vod-v1",
+    "window": 1000,
+    "stride": 950,
+    "edgePadding": 25,
+    "hardMargin": 1.5,
+    "hardExpansion": 2,
+    "context": 98,
+    "cropRounding": 64,
+    "fullWindowFraction": 0.8,
+    "softPeakMin": 0.015,
+    "softExpansion": 64,
+    "fadeRollingFrames": 31,
+    "fadeRollingSum": 0.03,
+    "hardExclusion": 30
+  },
+  "sourceWeights": {
+    "saved_model.pb": "8ac2a52c5719690d512805b6eaf5ce12097c1d8860b3d9de245dcbbc3100f554",
+    "variables/variables.data-00000-of-00001": "b8c9dc3eb807583e6215cabee9ca61737b3eb1bceff68418b43bf71459669367",
+    "variables/variables.index": "8b99e28b4ad11372d9a1ad9703298c2e370df14859da4245fdbe818e92dd403f"
+  },
+  "fastModel": "folded8.xml",
+  "referenceModel": "first-composed-f32.xml",
+  "files": {
+    "folded8.xml": "0cc1647574dc18f02947e52e59cfa4f274f05cd985adde8e8c489d3141c0f289",
+    "folded8.bin": "323b86c79591ae2c6dfdfa053afd69a572b8fee2d10e9e658eaeb83eb227e8b9",
+    "first-composed-f32.xml": "284d75f73a36ed7d954f00ede7033246f554ccc49fddb35fbfaf42fe0a77253a",
+    "first-composed-f32.bin": "4c247c5f75c889fcabc482e5a82af1e57e9cab2ca548c0c2cb428a8d3c681580"
+  }
+}

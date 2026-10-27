@@ -1,0 +1,51 @@
+{
+  "sourceRepository": "bitmovin-engineering/TransNetV2",
+  "sourceRevision": "85cef72af9a916bdfd7cc94a670c9cdfbf12d1ed",
+  "tensorflow": "2.21.0",
+  "openvino": "2025.3.0",
+  "nncf": "2.18.0",
+  "calibration": [
+    {
+      "label": "news",
+      "rgbSha256": "ea5a481645e453dbb856294d56abc556711e619f81b6964029260297583317d7",
+      "offsets": [
+        0,
+        3300,
+        6600,
+        9900
+      ],
+      "framesPerWindow": 100
+    },
+    {
+      "label": "drama",
+      "rgbSha256": "186203da9085ea93e8fe59f80f65f59e1ed524451fbb8d376705ddfaed30c4b5",
+      "offsets": [
+        0,
+        233,
+        466,
+        700
+      ],
+      "framesPerWindow": 100
+    },
+    {
+      "label": "animation",
+      "rgbSha256": "2349d2eb931ad4f2d4e0ca96c35d86123015d4312dd4b163a53656fedc47c16c",
+      "offsets": [
+        0,
+        300,
+        600,
+        900
+      ],
+      "framesPerWindow": 100
+    }
+  ],
+  "calibrationAvailability": "Licensed raw RGB inputs are not redistributed. Supply matching inputs for reproduction or independently qualify a different calibration set.",
+  "cnnQuantization": {
+    "preset": "MIXED",
+    "biasCorrection": false,
+    "quantizers": 61,
+    "outsideCnn": 0
+  },
+  "fp32Reference": "Fold BN, direct temporal dilations, compose only the first four spatial/temporal convolution pairs; integer histogram scatter.",
+  "policy": "aisa-vod-v1"
+}

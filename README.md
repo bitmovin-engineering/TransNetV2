@@ -55,3 +55,10 @@ If found useful, please cite us;)
 - ACM Multimedia paper of the older version: [A Framework for Effective Known-item Search in Video](https://dl.acm.org/doi/abs/10.1145/3343031.3351046)
 
 - The older version paper: [TransNet: A deep network for fast detection of common shot transitions](https://arxiv.org/abs/1906.03363)
+
+## Optional offline CPU backend
+
+An experimental, explicitly selected OpenVINO backend is available in
+[inference-cpu](inference-cpu/README.md). It provides a disk-backed RGB worker,
+versioned guarded-precision policy and reproducible model build tools. It requires
+consumer-quality qualification and does not change the existing inference APIs.
