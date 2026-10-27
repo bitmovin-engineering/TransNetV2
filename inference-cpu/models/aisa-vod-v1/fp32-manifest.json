@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "policy": {
+    "id": "aisa-vod-fp32-v1",
+    "window": 1000,
+    "stride": 950,
+    "edgePadding": 25,
+    "precision": "fp32",
+    "passes": 1
+  },
+  "sourceWeights": {
+    "saved_model.pb": "8ac2a52c5719690d512805b6eaf5ce12097c1d8860b3d9de245dcbbc3100f554",
+    "variables/variables.data-00000-of-00001": "b8c9dc3eb807583e6215cabee9ca61737b3eb1bceff68418b43bf71459669367",
+    "variables/variables.index": "8b99e28b4ad11372d9a1ad9703298c2e370df14859da4245fdbe818e92dd403f"
+  },
+  "model": "first-composed-f32.xml",
+  "inputs": {
+    "rgb": "input_1"
+  },
+  "files": {
+    "first-composed-f32.xml": "284d75f73a36ed7d954f00ede7033246f554ccc49fddb35fbfaf42fe0a77253a",
+    "first-composed-f32.bin": "4c247c5f75c889fcabc482e5a82af1e57e9cab2ca548c0c2cb428a8d3c681580"
+  }
+}

@@ -8,7 +8,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT/'inference-cpu/src'))
-from transnetv2_cpu.models import SOURCE, write_manifest
+from transnetv2_cpu.models import SOURCE, write_manifest, write_fp32_manifest
 
 
 def main():
@@ -29,6 +29,8 @@ def main():
     run('export_composed_conv_model.py',args.weights,args.output/'first-composed','--first-only')
     run('convert_openvino_scatter.py',args.output/'first-composed',args.output/'first-composed-f32.xml')
     run('quantize_cnn_graph.py',args.output/'folded-f32.xml',args.output/'folded8.xml',*args.calibration_rgb)
+    write_fp32_manifest(args.output)
+    (args.output/'manifest.json').rename(args.output/'fp32-manifest.json')
     write_manifest(args.output)
     print(args.output/'manifest.json')
 

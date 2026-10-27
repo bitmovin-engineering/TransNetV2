@@ -3,6 +3,7 @@ import os
 import hashlib
 from pathlib import Path
 import threading
+import time
 import numpy as np
 
 FRAME_BYTES = 27 * 48 * 3
@@ -13,6 +14,7 @@ class FrameSpool:
         self.condition = threading.Condition()
         self.frames = 0
         self.eof = stream is None
+        self.eof_monotonic = time.monotonic() if stream is None else None
         self.error = None
         self.thread = None
         self.max_bytes = max_bytes
@@ -62,6 +64,7 @@ class FrameSpool:
             self.error = error
         finally:
             with self.condition:
+                self.eof_monotonic = time.monotonic()
                 self.eof = True
                 self.condition.notify_all()
 
