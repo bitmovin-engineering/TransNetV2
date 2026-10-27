@@ -17,6 +17,11 @@ Raw INT8 alone is not a supported replacement for the original model.
 python -m pip install ./inference-cpu
 ```
 
+For a reproducible isolated environment including transitive runtime dependencies,
+run `uv sync --frozen --no-dev --no-editable --python python3.12` from
+`inference-cpu/`. The standalone container also uses this lockfile, with pinned
+base-image and installer digests. Conversion and test extras are excluded.
+
 `models/aisa-vod-v1` contains the evaluated XML/BIN pairs and their SHA256 manifest.
 The BIN files use Git LFS. Obtain them from this fork at an immutable revision;
 there is no runtime download. Model bytes and the exact policy are verified before
