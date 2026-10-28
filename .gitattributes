@@ -2,3 +2,5 @@
 *.pb filter=lfs diff=lfs merge=lfs -text
 *.index filter=lfs diff=lfs merge=lfs -text
 *.data-* filter=lfs diff=lfs merge=lfs -text
+inference-cpu/models/**/*.bin filter=lfs diff=lfs merge=lfs -text
+inference-cpu/models/**/*.xml filter=lfs diff=lfs merge=lfs -text
